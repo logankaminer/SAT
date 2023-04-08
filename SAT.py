@@ -222,6 +222,7 @@ class SATFramework():
 
 		return response
 
+
 	def main(self):
 		global response
 
@@ -234,9 +235,4 @@ class SATFramework():
 			if not self.request.is_auxillary:
 				time.sleep(self.request.latency)
 
-			if not response:
-				self.request = self.get_next_request(i)
-			else:
-				if not self.request.is_auxillary:
-					time.sleep(self.request.latency)
-				self.request = self.get_next_request(i)
+			self.request = self.get_next_request(i)
