@@ -222,7 +222,6 @@ class SATFramework():
 
 		return response
 
-
 	def main(self):
 		global response
 
