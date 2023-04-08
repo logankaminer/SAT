@@ -26,7 +26,7 @@ class RobloxAuth():
 			print('\n[*]Authentication FAILED ...\n')
 
 config = SAT.Config(
-	har_file=None,
+	har_file=r'example.har',
 	hook_class=RobloxAuth,
 	payload_dict={
 		'cvalue': 'USERNAME',
