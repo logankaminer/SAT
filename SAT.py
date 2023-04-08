@@ -43,7 +43,7 @@ class Request():
 
 		self.payload = None
 		self.content_type = None
-		self.is_auxillary = self._is_aux_req(self.url) # could bug with modifying url after-the-fact
+		self.is_auxillary = self._is_aux_req(self.url)
 
 		if 'postData' in _json:
 			post_data = json.loads(_json['postData']) if type(_json['postData']) != dict else _json['postData']
@@ -109,7 +109,7 @@ class SATFramework():
 		else:
 			self.reference_data, self.tracker_count = (har.export(Config.har_file), 0)
 
-		self.default_headers_dict = defaultdict(lambda: self.get_dnt()) # {'DNT': lambda: self.__get_dnt__()}
+		self.default_headers_dict = defaultdict(lambda: self.get_dnt())
 		self.headers_dict = (Config.headers_dict | self.default_headers_dict) if Config.headers_dict else self.default_headers_dict # test this line
 
 		self.session = self.get_session()
@@ -203,7 +203,7 @@ class SATFramework():
 					func()
 
 			if response.request.url in hook_dict:
-				hook_dict[response.request.url](response) # run decorated module function
+				hook_dict[response.request.url](response)
 
 			self.elapsed_time = int(time.time() - self.start_time)
 			self.used_bandwidth += self.get_request_size() + self.get_response_size(response)
