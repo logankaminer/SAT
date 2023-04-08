@@ -43,7 +43,7 @@ class Request():
 
 		self.payload = None
 		self.content_type = None
-		self.is_auxillary = self._is_aux_req(self.url)
+		self.is_auxillary = self._is_aux_req(self.url) # could bug with modifying url after-the-fact
 
 		if 'postData' in _json:
 			post_data = json.loads(_json['postData']) if type(_json['postData']) != dict else _json['postData']
@@ -59,8 +59,13 @@ class Request():
 		self.format_request()
 
 	def _is_aux_req(self, url):
-		pattern = re.compile(r'\S*\.(?:js|png|woff2|ttf|jpg|ogg|mp3|mp4|gif|css)')
-		return True if pattern.match(url) else False
+		patterns = [
+			r"\S*\.(?:js|png|woff2|ttf|jpg|ogg|mp3|mp4|gif|css)",
+			r"^[-a-zA-Z0-9!$%^&*()_+|~=`{}\[\]:\";'<>?,.\/]{32,64}$"
+		]
+
+		matches = [(True if re.compile(pattern).match(url) else False) for pattern in patterns]
+		return max(matches)
 
 	def _zip_dict_arr(self, _dict):
 		return {name:value for (name,value) in [d.values() for d in _dict]}
@@ -100,6 +105,7 @@ class SATFramework():
 		if Config.fingerprint_threshold:
 			Analyzer = analytics.Analyzer(fingerprint_threshold=Config.fingerprint_threshold)
 			self.reference_data, self.tracker_count = Analyzer.omit_domains(har.export(Config.har_file))
+			print(self.tracker_count)
 		else:
 			self.reference_data, self.tracker_count = (har.export(Config.har_file), 0)
 
