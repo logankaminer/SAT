@@ -21,9 +21,9 @@ class RobloxAuth():
 
 		auth_data = response.json()
 		if 'isBanned' in auth_data:
-			print('[*]Authentication Successful ...')
+			print('\n[*]Authentication Successful ...\n')
 		else:
-			print('[*]Authentication FAILED ...')
+			print('\n[*]Authentication FAILED ...\n')
 
 config = SAT.Config(
 	har_file=None,
@@ -43,5 +43,3 @@ config = SAT.Config(
 
 instance = SAT.SATFramework(config)
 instance.main()
-
-print(instance.session.cookies)
