@@ -7,41 +7,12 @@ import requests
 import url_tools
 import analytics
 import urllib.parse
-# import multiprocessing
 import user_agent_randomizer
 from datetime import datetime
 from collections import defaultdict
 
-'''
-Framework problems:
-
--couldn't use this to scrape individual JM wood links
-because even if we substituted the url, the wrong information would be downloaded thereafter (images, api requests, etc).
-
-write a detector to request certain data based on scraped html (images in src and href tags, fonts, etc)?
-'''
-
-#FIXME: content_type is None if not 'application/json'
-#TODO wrap SAT.hook_class output in ansi color escape codes
-#TODO: check if we are doing the same thing in har.py if data is empty then removing key rather than leaving empty
-#TODO: check if used_bandwidth is accurate
-#TODO: write an "automate" function that requests data that, in the context of the target webpage, would be downloaded by a browser to make dynamic webpage activity appear more human.
-#TODO: latency issue: we are still sleeping after last request instead of ending execution.
-#TODO: fix the latency stuff. why are we waiting for the elapsed time if it already takes time to perform the request? - figure out residential connection stuff where we do wait to make the request-response time look less like a datacenter.
-#TODO: detect async request? (i dont think background-requests are noted unless we rely on XMLHttpRequest)
-#TODO: file upload support
-#TODO: generate data in har format to use
-
-# make certain file requests (img, fonts, scripts?, etc.) async if cannot be detected in headers?
-
 response = None
-hook_dict = {} # will multiple instances make this collide | (it will)
-
-# current_proxy = None
-# proxy_dict = {
-# 	'http': None,
-# 	'https': None
-# }
+hook_dict = {}
 
 def hook(url):
 	'''
@@ -61,13 +32,6 @@ def get_instance_attr(attr: str):
 	'''
 	return get_instance_attr, attr
 
-# def rotate_proxy(mode, address):
-# 	def _rotate_proxy(func):
-# 		proxy_dict[mode] = address
-# 		return func
-
-# 	return _rotate_proxy
-
 class Request():
 	def __init__(self, _json, latency) -> None:
 		self.latency = latency
@@ -79,7 +43,7 @@ class Request():
 
 		self.payload = None
 		self.content_type = None
-		self.is_auxillary = self._is_aux_req(self.url) # could bug with modifying url after-the-fact
+		self.is_auxillary = self._is_aux_req(self.url)
 
 		if 'postData' in _json:
 			post_data = json.loads(_json['postData']) if type(_json['postData']) != dict else _json['postData']
@@ -100,9 +64,6 @@ class Request():
 
 	def _zip_dict_arr(self, _dict):
 		return {name:value for (name,value) in [d.values() for d in _dict]}
-
-	# def _format_url_params(self, _dict):
-	# 	'&'.join(['='.join(kv) for kv in list(_dict.items())])
 
 	def format_request(self):
 		self.headers = self._zip_dict_arr(self.headers)
@@ -219,7 +180,6 @@ class SATFramework():
 				)
 			)
 
-			#FIXME: could bug out with "?"s in url
 			request.url = f'{request.url.split("?")[0]}?{query_string}'
 
 		if request.payload:
@@ -249,9 +209,6 @@ class SATFramework():
 		headers = self.request.headers
 		payload = self.request.payload
 
-		# if 'Host' in headers:
-		# 	headers.pop('Host')
-
 		self.session.headers = headers
 
 		request_func_dict = {
@@ -261,14 +218,14 @@ class SATFramework():
 		}
 
 		response = request_func_dict[self.request.method]()
-		self.hook_response(response) #TODO: running this in background thread could pose a problem
+		self.hook_response(response)
 
 		return response
 
 	def main(self):
 		global response
 
-		for i in range(1, len(self.reference_data)): # iterate from 1 because self.request is initialized at index 0
+		for i in range(1, len(self.reference_data)):
 			stats = self._get_stats(i)
 			print(f'{self.request.method}: {self.request.url} {stats}')
 
