@@ -4,7 +4,7 @@ Session Automation Tool is a Python framework designed to replicate browser sess
 
 ## Usage ##
 
-Sat is built around the Framework class, which is responsible for orchestrating requests and responses. Here's an example of how you can use the framework to automate sessions:
+SAT is built around the Framework class, which is responsible for orchestrating requests and responses. Here's an example of how you can use the framework to automate sessions:
 
 ```python
 
@@ -28,11 +28,11 @@ framework = sat.SATFramework(config)
 framework.execute()
 ```
 
-In the above example, we define a hook for http://example.com, which will print out the response text when called. We then create a Config object, which specifies the path to the HAR file, the hook class to use, and a silent flag to suppress output. Finally, we create an instance of the Framework class using our Config object and execute the session with framework.execute().
+In the above example, we define a hook for http://example.com, which will print out the response text when called. We then create a Config object, which specifies the path to the HAR file, the hook class to use, and a silent flag to suppress output. Finally, we create an instance of the Framework class using our Config object and execute the session with `framework.execute()`.
 
 ## Hooks ##
 
-Hooks are defined using the @sat.hook decorator. When a request is made to a URL that has a hook defined, the hook function is called with the resulting response object.
+Hooks are defined using the `@sat.hook decorator`. When a request is made to a URL that has a hook defined, the hook function is called with the resulting response object.
 
 ```python
 
