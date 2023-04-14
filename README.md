@@ -1,6 +1,6 @@
 # sat (Session Automation Tool)
 
-sat (Session Automation Tool) is a Python framework designed to replicate browser sessions from HAR request archives.
+SAT (Session Automation Tool) is a Python framework designed to replicate browser sessions from HAR request archives.
 ## Installation ##
 
 1. Clone this repository using git clone https://github.com/logankaminer/sat.git.
