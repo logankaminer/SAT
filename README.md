@@ -1,12 +1,6 @@
 # sat (Session Automation Tool)
 
 Session Automation Tool is a Python framework designed to replicate browser sessions from HAR request archives.
-## Installation ##
-
-1. Clone this repository using git clone https://github.com/logankaminer/sat.git.
-2. Change the working directory to the cloned repo using cd sat.
-3. Run pip install -r requirements.txt to install the dependencies.
-4. Use python example.py to run the example file included in the repository.
 
 ## Usage ##
 
