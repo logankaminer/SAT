@@ -41,7 +41,7 @@ def my_hook(response):
     print(response.text)
 ```
 
-In the above example, we define a hook for http://example.com that simply prints out the response text. When a request is made to http://example.com, the my_hook function will be called with the response object.
+In the above example, we define a hook for http://example.com that simply prints out the response text. When a request is made to http://example.com, the `my_hook` function will be called with the response object.
 
 ## File Generation ##
 
