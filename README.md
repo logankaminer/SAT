@@ -49,6 +49,6 @@ def my_hook(response):
 
 In the above example, we define a hook for http://example.com that simply prints out the response text. When a request is made to http://example.com, the my_hook function will be called with the response object.
 
-## License ##
+## File Generation ##
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+I lazily generated this using ChatGPT4.
