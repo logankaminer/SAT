@@ -18,11 +18,11 @@ import sat
 
 class MyHook:
     def __init__(self):
-        pass
+        self.cookies = []
 
     @sat.hook("http://example.com")
     def example_hook(self, response):
-        print(response.text)
+        self.cookies.extend(list(response.cookies.values()))
 
 config = sat.Config(
     har_file="path/to/har/file.har",
