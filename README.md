@@ -4,7 +4,7 @@ Session Automation Tool is a Python framework designed to replicate browser sess
 
 ## Usage ##
 
-sat is built around the Framework class, which is responsible for orchestrating requests and responses. Here's an example of how you can use the framework to automate sessions:
+Sat is built around the Framework class, which is responsible for orchestrating requests and responses. Here's an example of how you can use the framework to automate sessions:
 
 ```python
 
