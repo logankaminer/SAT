@@ -51,4 +51,4 @@ In the above example, we define a hook for http://example.com that simply prints
 
 ## File Generation ##
 
-I lazily generated this using ChatGPT4.
+I lazily generated this README using ChatGPT4.
