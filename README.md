@@ -20,8 +20,7 @@ class MyHook:
 
 config = sat.Config(
     har_file="path/to/har/file.har",
-    hook_class=MyHook,
-    silent=True
+    hook_class=MyHook
 )
 
 framework = sat.SATFramework(config)
