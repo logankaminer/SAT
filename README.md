@@ -23,7 +23,7 @@ config = sat.Config(
     hook_class=MyHook
 )
 
-framework = sat.SATFramework(config)
+framework = sat.Framework(config)
 framework.execute()
 ```
 
