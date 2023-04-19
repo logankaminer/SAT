@@ -27,7 +27,7 @@ framework = sat.Framework(config)
 framework.execute()
 ```
 -
-In the above example, we define a hook for http://example.com, which will append the cookie values in our response object to an innerclass list attribute (`self.cookies`) when called. We then create a Config object, which specifies the path to the HAR file, the hook class to use, and a silent flag to suppress output. Finally, we create an instance of the Framework class using our Config object and execute the session with `framework.execute()`.
+In the above example, we define a hook for http://example.com, which will append the cookie values in our response object to an inner-class list attribute (`self.cookies`) when called. We then create a Config object, which specifies the path to the HAR file, the hook class to use, and a silent flag to suppress output. Finally, we create an instance of the Framework class using our Config object and execute the session with `framework.execute()`.
 
 ## Hooks ##
 
