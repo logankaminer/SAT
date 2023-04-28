@@ -2,6 +2,12 @@
 
 The Session Automation Toolkit is an open-source Python framework designed for HTTP request preparation and automation using HAR request archives. SAT includes multiple interfaces to aid in the process, omitting the busy-work of replicating network activity in a browser session.
 
+### Todo ###
+- Test that default values can be overidden with Config parameters
+- Background requests on a separate thread (images, css, .js files)
+- Complete Flask-based session monitoring dashboard
+- Build HAR editor
+
 ## Installation ##
 
 The Session Automation Toolkit currently requires local installation and is only available at this repository.
@@ -20,6 +26,10 @@ To instantiate an instance of the SAT framework, you need to define a Config obj
 - `allow_redirects`,       (boolean flag to globally allow/disallow redirects)
 - `fingerprint_threshold`, (unimplemented)
 - `silent`                 (boolean flag to allow/disallow print output)
+
+### Framework Behavior ###
+
+Upon instantiation, SAT creates a session object with a randomized Mozilla user-agent and a random DNT (Do Not Track) value. Both of these values can be overidden with Config parameters.
 
 ### Framework Execution ###
 
