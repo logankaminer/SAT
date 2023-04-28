@@ -4,6 +4,7 @@ The Session Automation Toolkit is an open-source Python framework designed for H
 
 ### Todo ###
 - Test that default values can be overidden with Config parameters
+- Fix fingerprinting logic / implement an optional auto-update for DuckDuckGo's Tracker-Radar data.
 - Background requests on a separate thread (images, css, .js files)
 - Complete Flask-based session-monitoring dashboard
 - Build HAR editor
