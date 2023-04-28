@@ -33,7 +33,7 @@ class Analyzer():
 				else:
 					continue
 
-				if domain in url and fingerprint >= self.fingerprint_threshold:
+				if fingerprint >= self.fingerprint_threshold:
 					modified_json.pop(i)
 					tracker_count += 1
 
