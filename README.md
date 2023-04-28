@@ -26,8 +26,8 @@ To instantiate an instance of the SAT framework, you need to define a Config obj
 | param_dict            |  k:v pairs to map archived request parameters to custom ones |
 | payload_dict          |  k:v pairs to map archived request payloads to custom ones   |
 | hook_class            |  class reference to handle response objects                  |
-| allow_redirects       |  boolean flag to globally allow/disallow redirects           |
 | fingerprint_threshold |  unimplemented                                               |
+| allow_redirects       |  boolean flag to globally allow/disallow redirects           |
 | silent                |  boolean flag to allow/disallow print output                 |
 
 
