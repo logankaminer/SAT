@@ -135,7 +135,7 @@ class SessionHandler:
             "password": password
         }
 
-        self.config.payload_dict = payload_dict
+        self.config.payload_dict.update(payload_dict)
         self.config.headers_dict['x-csrf-token'] = sat.get_instance_attr('x_csrf_token')
 
         framework = sat.Framework(self.config)
