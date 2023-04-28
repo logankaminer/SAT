@@ -17,15 +17,15 @@ The Session Automation Toolkit currently requires local installation and is only
 ### Framework Configuration ###
 
 To instantiate an instance of the SAT framework, you need to define a Config object. Compatible parameters are as follows:
-- `har_file`               (HAR file path),
-- `url_dict`               (k:v pairs to map archived urls to custom strings),
-- `headers_dict`           (k:v pairs to map archived headers to custom strings),
-- `param_dict`             (k:v pairs to map archived request parameters to custom ones),
-- `payload_dict`           (k:v pairs to map archived request payloads to custom ones),
-- `hook_class`             (class reference to handle response objects),
-- `allow_redirects`,       (boolean flag to globally allow/disallow redirects)
-- `fingerprint_threshold`, (unimplemented)
-- `silent`                 (boolean flag to allow/disallow print output)
+- `har_file`              (HAR file path),
+- `url_dict`              (k:v pairs to map archived urls to custom strings),
+- `headers_dict`          (k:v pairs to map archived headers to custom strings),
+- `param_dict`            (k:v pairs to map archived request parameters to custom ones),
+- `payload_dict`          (k:v pairs to map archived request payloads to custom ones),
+- `hook_class`            (class reference to handle response objects),
+- `allow_redirects`       (boolean flag to globally allow/disallow redirects),
+- `fingerprint_threshold` (unimplemented),
+- `silent`                (boolean flag to allow/disallow print output)
 
 ### Framework Behavior ###
 
