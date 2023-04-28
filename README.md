@@ -5,7 +5,7 @@ The Session Automation Toolkit is an open-source Python framework designed for H
 ### Todo ###
 - Test that default values can be overidden with Config parameters
 - Background requests on a separate thread (images, css, .js files)
-- Complete Flask-based session monitoring dashboard
+- Complete Flask-based session-monitoring dashboard
 - Build HAR editor
 
 ## Installation ##
