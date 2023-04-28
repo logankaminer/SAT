@@ -130,6 +130,8 @@ class SessionHandler:
 
         framework = sat.Framework(self.config)
         framework.main()
+        
+        return framework.session
 
     def gen_sessions(self):
         return (self.make_session(username, self.accounts[username]) for username in self.accounts)
