@@ -32,21 +32,11 @@ def modify_dict(input_dict: dict, substitution_dict: dict, hook_class=None):
 
 	return input_dict
 
-# def modify_qs(url: str, param_dict: dict):
-# 	qs_dict = parse.parse_qs(url)
-# 	first_k, v = list(qs_dict.items())[0]
+def modify_qs(url, query_dict, param_dict, hook_class):
+	query_string = parse.urlencode(
+		modify_dict(
+			query_dict, param_dict, hook_class
+		)
+	)
 
-# 	param_index = first_k.index('?') + 1
-# 	first_param = first_k[param_index:len(first_k)]
-
-# 	qs_dict.pop(first_k)
-# 	qs_dict[first_param] = v
-
-# 	for param in qs_dict:
-# 		if param in param_dict:
-# 			query_val = ','.join(qs_dict[param]) #TODO: hardcoding comma-separated vals
-# 			new_val = _get_final_val(param_dict[param])
-
-# 			url = url.replace(query_val, new_val)
-
-# 	return url
+	return f'{url.split("?")[0]}?{query_string}'
