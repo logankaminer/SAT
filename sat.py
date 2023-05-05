@@ -6,326 +6,311 @@ import random
 import requests
 import url_tools
 import analytics
-import urllib.parse
 import user_agent_randomizer
 from datetime import datetime
 from collections import defaultdict
 import concurrent.futures as futures
 
-response = None
 hook_dict = {}
 
 
 def hook(url):
-	"""
-	Hook a request url to obtain resulting response object for all requests made to that url.
-	"""
+    """
+    Hook a request url to obtain resulting response object for all requests made to that url.
+    """
 
-	def _hook(func):
-		def wrapped(*args):
-			hook_dict[url] = lambda response: func(*args, response)
+    def _hook(func):
+        def wrapper(*args, **kwargs):
+            global hook_dict
+            hook_dict[url] = lambda response: func(*args, response, **kwargs)
 
-		wrapped.hooked = True
-		return wrapped
+        wrapper.hooked = True
+        return wrapper
 
-	return _hook
+    return _hook
 
 
 def get_instance_attr(attr: str):
-	"""
-	Retrieve variable defined in your hook class's __init__ function outside of the hook class.
-	"""
-	return get_instance_attr, attr
+    """
+    Retrieve variable defined in your hook class's __init__ function outside of the hook class.
+    """
+    return get_instance_attr, attr
 
 
 class Request:
-	def __init__(self, _json, latency) -> None:
-		self.latency = latency
-		self.url = _json["url"]
-		self.method = _json["method"]
-		self.headers = _json["headers"]
-		self.status_code = _json["status_code"]
-		self.query_dict = _json["query_string"]
+    def __init__(self, _json, latency, index) -> None:
+        global hook_dict
 
-		self.payload = None
-		self.content_type = None
-		self.is_auxiliary = self._is_aux_req(self.url) # could bug with modifying url after-the-fact
+        self.index = index
+        self.latency = latency
+        self.url = _json["url"]
+        self.method = _json["method"]
+        self.headers = _json["headers"]
+        self.status_code = _json["status_code"]
+        self.query_dict = _json["query_string"]
 
-		if self.is_auxiliary:
-			self.latency = 0
+        self.payload = None
+        self.content_type = None
+        self.is_auxiliary = (
+            True
+            if self._is_aux_req(self.url) and (self.url not in hook_dict)
+            else False
+        )
 
-		if "postData" in _json:
-			post_data = (
-				json.loads(_json["postData"])
-				if type(_json["postData"]) != dict
-				else _json["postData"]
-			)
-			self.content_type = post_data["mimeType"]
+        if self.is_auxiliary:
+            self.latency = 0
 
-			params = (
-				post_data["params"]
-				if "application/json" not in self.content_type
-				else None
-			)
-			text = json.loads(post_data["text"]) if not params else None
+        if "postData" in _json:
+            post_data = (
+                json.loads(_json["postData"])
+                if type(_json["postData"]) != dict
+                else _json["postData"]
+            )
+            self.content_type = post_data["mimeType"]
 
-			if type(text) == list:
-				text = text[0]
-			self.payload = params or text
+            params = (
+                post_data["params"]
+                if "application/json" not in self.content_type
+                else None
+            )
+            text = json.loads(post_data["text"]) if not params else None
 
-		self.format_request()
+            if type(text) == list:
+                text = text[0]
+            self.payload = params or text
 
-	def _is_aux_req(self, url):
-		patterns = [
-			r"\S*\.(?:js|png|woff2|ttf|jpg|ogg|mp3|mp4|gif|css)",
-			r"^[-a-zA-Z0-9!$%^&*()_+|~=`{}\[\]:\";'<>?,.\/]{32,64}$",
-		]
+        self.format_request()
 
-		matches = [
-			(True if re.compile(pattern).match(url) else False) for pattern in patterns
-		]
-		return max(matches)
+    def _is_aux_req(self, url):
+        patterns = [
+            r"\S*\.(?:js|png|woff2|ttf|jpg|ogg|mp3|mp4|gif|css|svg)",
+            r"^[-a-zA-Z0-9!$%^&*()_+|~=`{}\[\]:\";'<>?,.\/]{32,64}$",
+        ]
 
-	def _zip_dict_arr(self, _dict):
-		return {name: value for (name, value) in [d.values() for d in _dict]}
+        matches = [
+            (True if re.compile(pattern).match(url) else False) for pattern in patterns
+        ]
+        return max(matches)
 
-	def format_request(self):
-		self.headers = self._zip_dict_arr(self.headers)
-		self.payload = (
-			self._zip_dict_arr(self.payload)
-			if self.payload and type(self.payload) != dict
-			else self.payload
-		)
-		self.query_dict = (
-			self._zip_dict_arr(self.query_dict) if len(self.query_dict) > 0 else {}
-		)
+    def _zip_dict_arr(self, _dict):
+        return {name: value for (name, value) in [d.values() for d in _dict]}
 
-		if "cookie" in self.headers:
-			self.headers.pop("cookie")
+    def format_request(self):
+        self.headers = self._zip_dict_arr(self.headers)
+        self.payload = (
+            self._zip_dict_arr(self.payload)
+            if self.payload and type(self.payload) != dict
+            else self.payload
+        )
+        self.query_dict = (
+            self._zip_dict_arr(self.query_dict) if len(self.query_dict) > 0 else {}
+        )
+
+        if "cookie" in self.headers:
+            self.headers.pop("cookie")
 
 
 class Config:
-	def __init__(
-		self,
-		har_file,
-		url_dict={},
-		headers_dict={},
-		param_dict={},
-		payload_dict={},
-		hook_class=None,
-		allow_redirects=True,
-		fingerprint_threshold=None,
-		silent=False
-	):
-		self.silent = silent
-		self.har_file = har_file
-		self.url_dict = url_dict
-		self.param_dict = param_dict
-		self.hook_class = hook_class
-		self.headers_dict = headers_dict
-		self.payload_dict = payload_dict
-		self.allow_redirects = allow_redirects
-		self.fingerprint_threshold = fingerprint_threshold
+    def __init__(
+        self,
+        har_file,
+        url_dict={},
+        headers_dict={},
+        param_dict={},
+        payload_dict={},
+        hook_class=None,
+        allow_redirects=True,
+        fingerprint_threshold=None,
+        silent=False,
+    ):
+        self.silent = silent
+        self.har_file = har_file
+        self.url_dict = url_dict
+        self.param_dict = param_dict
+        self.hook_class = hook_class
+        self.headers_dict = headers_dict
+        self.payload_dict = payload_dict
+        self.allow_redirects = allow_redirects
+        self.fingerprint_threshold = fingerprint_threshold
 
 
-class SATFramework:
-	"""
-	Session-Request Automation Tool framework.
-	"""
+class Framework:
+    """
+    Session-Request Automation Tool framework.
+    """
 
-	def __init__(self, Config) -> None:
-		self.url_dict = Config.url_dict
-		self.hook_class = Config.hook_class()
-		self.param_dict = Config.param_dict
-		self.payload_dict = Config.payload_dict
-		self.allow_redirects = Config.allow_redirects
-		self.silent = Config.silent
+    def __init__(self, Config) -> None:
+        self.url_dict = Config.url_dict
+        self.hook_class = Config.hook_class()
+        self.param_dict = Config.param_dict
+        self.payload_dict = Config.payload_dict
+        self.allow_redirects = Config.allow_redirects
+        self.silent = Config.silent
 
-		if Config.fingerprint_threshold:
-			Analyzer = analytics.Analyzer(
-				fingerprint_threshold=Config.fingerprint_threshold
-			)
-			self.reference_data, self.tracker_count = Analyzer.omit_domains(
-				har.export(Config.har_file)
-			)
-		else:
-			self.reference_data, self.tracker_count = (har.export(Config.har_file), 0)
+        self.default_headers_dict = defaultdict(lambda: self.get_dnt())
+        self.headers_dict = (
+            (Config.headers_dict | self.default_headers_dict)
+            if Config.headers_dict
+            else self.default_headers_dict
+        )
 
-		self.default_headers_dict = defaultdict(lambda: self.get_dnt())
-		self.headers_dict = (
-			(Config.headers_dict | self.default_headers_dict)
-			if Config.headers_dict
-			else self.default_headers_dict
-		)
+        self.session = self.get_session()
+        self.request_reference = {}
 
-		self.session = self.get_session()
-		self.request = self.get_next_request(index=0)
+        if Config.fingerprint_threshold:
+            Analyzer = analytics.Analyzer(
+                fingerprint_threshold=Config.fingerprint_threshold
+            )
+            self.reference_data, self.tracker_count = Analyzer.omit_domains(
+                har.export(Config.har_file)
+            )
+        else:
+            self.reference_data, self.tracker_count = (
+                har.export(Config.har_file),
+                None,
+            )
 
-		self.start_time = time.time()
-		self.elapsed_time = None
-		self.used_bandwidth = 0
+        self._hook_urls()
 
-	def _wrap_color(self, _str, color_esc):
-		reset = "\033[0;0m"
-		return f"[{color_esc}{_str}{reset}]"
+    def _wrap_color(self, _str, color_esc):
+        reset = "\033[0;0m"
+        return f"[{color_esc}{_str}{reset}]"
 
-	def _get_stats(self, request_index):
-		latency = f"{self.request.latency:.4f}s"
-		progress = f"{request_index}/{len(self.reference_data) - 1}"
+    def _get_stats(self, request: Request):
+        global hook_dict
 
-		latency = self._wrap_color(latency, "\033[0;32m")
-		progress = self._wrap_color(progress, "\033[1;36m")
-		url_color = str()
+        latency = f"{request.latency:.4f}s"
+        progress = f"{request.index + 1}/{len(self.reference_data) - 1}"
 
-		if self.request.is_auxiliary:
-			url_color = "\033[33m"
+        latency = self._wrap_color(latency, "\033[0;32m")
+        progress = self._wrap_color(progress, "\033[1;36m")
 
-		stats = f'{(f"{latency} ") if self.request.latency > 0 else str()}{progress}'
-		output = f"{self.request.method}: {self._wrap_color(self.request.url, url_color)} {stats}"
+        url_color = str()
+        if request.is_auxiliary:
+            url_color = "\033[33m"
+        elif request.url in hook_dict:
+            url_color = "\033[1;34m"
 
-		return output
+        stats = f'{(f"{latency} ") if request.latency > 0 else str()}{progress}'
+        output = f"{request.method}: {self._wrap_color(request.url, url_color)} {stats}"
 
-	def _get_dict_size(self, headers):
-		return sum(len(key) + len(value) for key, value in headers.items())
+        return output
 
-	def get_dnt(self):
-		self.dnt = random.choice(["0", "1", "null"])
-		return self.dnt
+    def _hook_urls(self):
+        global hook_dict
 
-	def get_request_size(self):
-		request_line_size = len(self.request.method) + len(self.request.url)
-		request_size = request_line_size + self._get_dict_size(self.request.headers)
+        functions = [
+            actual
+            for attr in dir(self.hook_class)
+            if not (attr.startswith("__"))
+            and callable(actual := getattr(self.hook_class, attr))
+        ]
+        for func in functions:
+            if getattr(func, "hooked", False):
+                func()
 
-		return request_size
+    def get_dnt(self):
+        self.dnt = random.choice(["0", "1", "null"])
+        return self.dnt
 
-	def get_response_size(self, response):
-		response_content_size = len(response.content.decode("utf-8", errors="ignore"))
-		response_size = response_content_size + self._get_dict_size(
-			self.request.headers
-		)
+    def get_session(self):
+        session = requests.Session()
+        session.headers["User-Agent"] = user_agent_randomizer.get_random()
 
-		return response_size
+        return session
 
-	def get_session(self):
-		session = requests.Session()
-		session.headers["User-Agent"] = user_agent_randomizer.get_random()
+    def get_next_request(self, index):
+        _json = self.reference_data[index]
+        next_req = (
+            self.reference_data[index + 1]
+            if index != (len(self.reference_data) - 1)
+            else _json
+        )
 
-		return session
+        latency = (
+            datetime.strptime(next_req["startedDateTime"][:-6], "%Y-%m-%dT%H:%M:%S.%f")
+            - datetime.strptime(_json["startedDateTime"][:-6], "%Y-%m-%dT%H:%M:%S.%f")
+        ).microseconds / 100000
+        latency += random.choice((random.uniform(-0.05, 0.05), -(latency / 2)))
 
-	def get_next_request(self, index):
-		_json = self.reference_data[index]
-		next_req = (
-			self.reference_data[index + 1]
-			if index != (len(self.reference_data) - 1)
-			else _json
-		)
+        latency = 0 if latency < 0 else latency
+        request = Request(_json, latency, index)
 
-		latency = (
-			datetime.strptime(next_req["startedDateTime"][:-6], "%Y-%m-%dT%H:%M:%S.%f")
-			- datetime.strptime(_json["startedDateTime"][:-6], "%Y-%m-%dT%H:%M:%S.%f")
-		).microseconds / 100000
-		latency += random.choice((random.uniform(-0.05, 0.05), -(latency / 2)))
+        return request
 
-		latency = 0 if latency < 0 else latency
-		request = Request(_json, latency)
+    def hook_request(self, request: Request):
+        request.url = url_tools.modify_path(request.url, self.url_dict)
+        request.headers = url_tools.modify_dict(
+            request.headers, self.headers_dict, hook_class=self.hook_class
+        )
 
-		return request
+        if len(request.query_dict) >= 1:
+            args = [request.query_dict, self.param_dict, self.hook_class]
+            request.url = url_tools.modify_qs(request.url, *args)
 
-	def hook_request(self, request: Request):
-		request.url = url_tools.modify_path(request.url, self.url_dict)
-		request.headers = url_tools.modify_dict(
-			request.headers, self.headers_dict, hook_class=self.hook_class
-		)
+        if request.payload:
+            request.payload = url_tools.modify_dict(
+                request.payload, self.payload_dict, hook_class=self.hook_class
+            )
 
-		if len(request.query_dict) >= 1:
-			query_string = urllib.parse.urlencode(
-				url_tools.modify_dict(
-					request.query_dict, self.param_dict, hook_class=self.hook_class
-				)
-			)
+        return request
 
-			# FIXME: could bug out with "?"s in url
-			request.url = f'{request.url.split("?")[0]}?{query_string}'
+    def hook_response(self, response: requests.Response):
+        global hook_dict
+        if response.request.url in hook_dict:
+            hook_dict[response.request.url](response)  # run decorated module function
 
-		if request.payload:
-			request.payload = url_tools.modify_dict(
-				request.payload, self.payload_dict, hook_class=self.hook_class
-			)
+    def make_request(self, request_index):
+        request = self.hook_request(self.request_reference[request_index])
 
-		return request
+        if not self.silent:
+            output = self._get_stats(request)
+            print(output)
 
-	def hook_response(self, response: requests.Response):
-		if self.hook_class:
-			global hook_dict
+        url = request.url
+        headers = request.headers
+        payload = request.payload
 
-			functions = [
-				getattr(self.hook_class, attr)
-				for attr in dir(self.hook_class)
-				if not (attr.startswith("__"))
-				and callable(getattr(self.hook_class, attr))
-			]
-			for func in functions:
-				if getattr(func, "hooked", False):
-					func()
+        self.session.headers = headers
 
-			if response.request.url in hook_dict:
-				hook_dict[response.request.url](response) # run decorated module function
+        request_func_dict = {
+            "GET": lambda: self.session.get(url, allow_redirects=self.allow_redirects),
+            "OPTIONS": lambda: self.session.options(
+                url, allow_redirects=self.allow_redirects
+            ),
+            "POST": lambda: self.session.post(
+                url, json=payload, allow_redirects=self.allow_redirects
+            )
+            if payload and "application/json" in request.content_type
+            else (
+                self.session.post(url, allow_redirects=self.allow_redirects)
+                if not payload
+                else self.session.post(
+                    url, data=request.payload, allow_redirects=self.allow_redirects
+                )
+            ),
+        }
 
-			self.elapsed_time = int(time.time() - self.start_time)
-			self.used_bandwidth += self.get_request_size() + self.get_response_size(
-				response
-			)
+        response = request_func_dict[request.method]()
+        if self.hook_class:
+            self.hook_response(response)
 
-	def make_request(self):
-		self.request = self.hook_request(self.request)
+        return response
 
-		url = self.request.url
-		headers = self.request.headers
-		payload = self.request.payload
+    def main(self):
+        st_time = time.time()
+        bg_executor = futures.ThreadPoolExecutor(max_workers=1)
 
-		self.session.headers = headers
+        for i in range(0, len(self.reference_data)):
+            request = self.get_next_request(index=i)
+            self.request_reference[i] = request
 
-		request_func_dict = {
-			"GET": lambda: self.session.get(url, allow_redirects=self.allow_redirects),
-			"OPTIONS": lambda: self.session.options(
-				url, allow_redirects=self.allow_redirects
-			),
-			"POST": lambda: self.session.post(
-				url, json=payload, allow_redirects=self.allow_redirects
-			)
-			if payload and "application/json" in self.request.content_type
-			else (
-				self.session.post(url, allow_redirects=self.allow_redirects)
-				if not payload
-				else self.session.post(
-					url, data=self.request.payload, allow_redirects=self.allow_redirects
-				)
-			),
-		}
+            if not request.is_auxiliary:
+                self.make_request(i)
+                time.sleep(request.latency)
+            else:
+                future = bg_executor.submit(self.make_request, i)
+                future.done()
 
-		response = request_func_dict[self.request.method]()
-		self.hook_response(response) # running this in background thread could pose a problem
-
-		return response
-
-	def main(self):
-		global response
-
-		executor = futures.ThreadPoolExecutor(max_workers=1)
-		bg_executor = futures.ThreadPoolExecutor(max_workers=1)
-
-		for i in range(1, len(self.reference_data)):
-			if not self.silent:
-				output = self._get_stats(i)
-				print(output)
-
-			if not self.request.is_auxiliary:
-				future = executor.submit(self.make_request)
-				response = future.result()
-
-				time.sleep(self.request.latency)
-			else:
-				future = bg_executor.submit(self.make_request)
-				response = future.result()
-
-			self.request = self.get_next_request(i)
+        bg_executor.shutdown()
+        print(f"session duration: {time.time() - st_time:.1f}s")
