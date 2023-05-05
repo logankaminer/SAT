@@ -29,7 +29,7 @@ class RobloxAuth():
 		if response.request.method != 'POST':
 			return
 
-		is_authorized =  True if ('user' in (auth_data := response.json()) and 'id' in auth_data['user']) else False
+		is_authorized = True if ('user' in (auth_data := response.json()) and 'id' in auth_data['user']) else False
 		if is_authorized:
 			print('[*]Authentication Successful ...')
 		else:
