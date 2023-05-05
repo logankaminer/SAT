@@ -3,9 +3,9 @@
 The Session Automation Toolkit is an open-source Python framework designed for HTTP request preparation and automation using HAR request archives. SAT includes multiple interfaces to aid in the process, omitting the busy-work of replicating network activity in a browser session.
 
 ### Todo ###
-- Verify that default values can be overidden with Config parameters
+- ~~Verify that default values can be overidden with Config parameters~~
+- ~~Background requests on a separate thread (images, css, .js files)~~
 - Fix fingerprinting logic / implement an optional auto-update for DuckDuckGo's Tracker-Radar data.
-- Background requests on a separate thread (images, css, .js files)
 - Complete Flask-based session-monitoring dashboard
 - Build HAR editor
 
