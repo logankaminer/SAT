@@ -53,7 +53,7 @@ In the code above, the SAT framework replicates the requests archived in your HA
 
 ### Hook Classes ###
 
-Perhaps to be renamed in the future, hook classes are currently responsible for handling response objects per each request. Though, in the future they will be more event-oriented, with more available actions to execute per request.
+Perhaps to be renamed in the future, hook classes are currently responsible for handling response objects per each request. Though, in the future, there will be more available actions to perform per request.
 
 ```python
 
@@ -82,7 +82,7 @@ framework = sat.Framework(config)
 framework.main()
 ```
 
-In the above example, we define a hook for http://example.com, which will call and external function that appends a specified cookie value to a file (`cookies.txt`). Upon the execution of any request to http://example.com, the decorated `example_hook` function will run.
+In the above example, we define a hook for http://example.com, which will call an external function that appends a specified cookie value to a file (`cookies.txt`). Upon the execution of any request to http://example.com, the decorated `example_hook` function will run.
 
 ### get_instance_attr ###
 
