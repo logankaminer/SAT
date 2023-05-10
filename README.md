@@ -111,10 +111,7 @@ class MyHook:
     @sat.hook("http://example.com")
     def get_token(self, response):
         soup = BeautifulSoup(response.text, 'html.parser')
-        self.x_csrf_token = soup.find(
-            'meta',
-            attrs={'name': 'csrf-token'}
-        ).get('x-csrf-token')
+        self.x_csrf_token = soup.find('csrf-token').text
 
     @sat.hook("http://example.com/login")
     def example_hook(self, response):
