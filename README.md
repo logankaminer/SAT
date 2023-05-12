@@ -62,7 +62,6 @@ import sat
 class MyHooks:
     def __init__(self):
         self.target_cookie = 'key'
-        self.cookie_file = open('cookies.txt', 'a')
 
     def _append_cookie(self, v):
         with open('cookies.txt', 'a') as f:
