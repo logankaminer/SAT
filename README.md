@@ -100,9 +100,7 @@ from bs4 import BeautifulSoup
 class MyHook:
     def __init__(self):
         self.x_csrf_token = None
-
         self.target_cookie = 'key'
-        self.cookie_file = open('cookies.txt', 'a')
 
     def _append_cookie(self, v):
         with open('cookies.txt', 'a') as f:
