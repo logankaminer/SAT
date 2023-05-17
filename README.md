@@ -54,7 +54,7 @@ In the code above, the SAT framework replicates the requests archived in your HA
 
 ### Hook Classes ###
 
-Perhaps to be renamed in the future, hook classes are currently responsible for handling response objects per each request. Though, in the future, there will be more available actions to perform per request.
+Perhaps to be renamed in the future, hook classes are currently responsible for handling response objects per each request. Though, in the future, more available actions will be supported.
 
 ```python
 
